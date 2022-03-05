@@ -1,0 +1,198 @@
+# カレントディレクトリの確認（任意のディレクトリで良いです）
+$ pwd
+/Users/fuku/workspace/runteq
+
+# 作業用のディレクトリを作成し移動
+$ mkdir git-tutorial
+$ cd git-tutorial
+$ pwd
+/Users/fuku/workspace/runteq/git-tutorial
+
+# Gitリポジトリの作成
+$ git init
+Initialized empty Git repository in /Users/fuku/work/git-tutorial/.git/
+
+# カレントディレクトリに.gitディレクトリが作られる
+$ ls -l .git
+total 24
+8 -rw-r--r--   1 fuku  staff   23  5 16 21:09 HEAD
+8 -rw-r--r--   1 fuku  staff  137  5 16 21:09 config
+8 -rw-r--r--   1 fuku  staff   73  5 16 21:09 description
+0 drwxr-xr-x  14 fuku  staff  448  5 16 21:09 hooks
+0 drwxr-xr-x   3 fuku  staff   96  5 16 21:09 info
+0 drwxr-xr-x   4 fuku  staff  128  5 16 21:09 objects
+0 drwxr-xr-x   4 fuku  staff  128  5 16 21:09 refs
+
+# 現在の状態を確認
+$ git status
+On branch master
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+
+# 設定情報の確認
+$ git config --list
+
+; ここで確認したい情報はuser.emailとuser.nameです。
+
+# いつも使っているメールアドレスを設定する（GitHubに登録するメールアドレスと同じものを使うこと）
+$ git config --global user.email your-email@example.com
+
+# あなたのユーザー名
+$ git config --global user.name 'your name'
+
+# 設定の確認
+$ git config --list
+user.email=your-email@example.com
+user.name=your name
+
+; git init
+; Gitリポジトリを新しく作るためのコマンドです。
+; このコマンドを実行することで.gitディレクトリができます。
+; .gitディレクトリにはGit関連の様々のファイルが格納されていますが基本的に触ることはありませんのでここでは特に説明はしません。
+
+; git status
+; 現在のGitの状態を表示するコマンドです。
+; このコマンドで以下のようなことが分かります。
+
+; 現在いるブランチ（例: On branch master）
+; ファイルの状態変化（編集やインデックスへの追加など）
+; https://git-scm.com/docs/git-status
+
+; 課題２
+# `test.txt`をインデックスに追加
+$ git add test.txt
+
+# `test.txt`がインデックスに追加された
+$ git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   test.txt
+
+# インデックスに追加された変更をコミット
+$ git commit -m 'First commit'
+[master (root-commit) dd29465] First commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test.txt
+
+# 全ての変更がコミットされ、作業ツリーの状態がクリーンになった
+$ git status
+On branch master
+nothing to commit, working tree clean
+
+# 個別のファイル単位で追加
+$ git add ファイル名
+
+# 特定ディレクトリ以下のファイルをまとめて追加
+$ git add ディレクトリのパス/*
+
+# 全ての変更をまとめて追加（追跡対象でないファイルも含む）
+# 便利なオプションですが、余計なファイルが追加されていないか`git status`などで必ず確認しましょう
+$ git add -A
+
+# メッセージつきでコミット
+$ git commit -m 'コミットメッセージ'
+
+開発をしていると過去にどのようなコミットを行ったか確認したい場面がよくあります。
+そんな時にgit showコマンドが使えます。
+
+過去のコミット時点でのファイルの確認
+git show コミットIDでは差分の確認ができましたが、そうではなくファイル全体を見たいケースもあります。
+そのような時はgit show コミットID:ファイル名とすることで確認できます。
+
+git show
+
+過去のコミットの詳細を確認するためのコマンドです。
+
+# コミットの情報や差分を見る
+$ git show コミットID
+
+# 特定コミット時点でのファイルの状態を見る
+$ git show コミットID:ファイル名
+
+課題４
+# ブランチの作成
+$ git branch first-branch
+
+# ローカルリポジトリにあるブランチ一覧を確認
+# masterブランチに`*`がついている。これは現在どのブランチにいるかを示している
+$ git branch
+  first-branch
+* master
+
+# ブランチの移動
+$ git checkout first-branch
+Switched to branch 'first-branch'
+
+# first-branchブランチに移動した
+$ git branch
+* first-branch
+  master
+
+なお、git checkout -b ブランチ名はブランチの作成と移動を同時に行います。
+
+# masterブランチに移動
+$ git checkout master
+Switched to branch 'master'
+
+# first-branchブランチで行った変更はまだ反映されていない
+$ cat test.txt
+first message
+second message
+
+# first-branchブランチをマージ
+$ git merge first-branch
+Updating e895b1c..3f1bacf
+Fast-forward
+ test.txt | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+# 変更が反映された
+$ cat test.txt
+first message
+second message
+third message - on first-branch
+
+# `git branch -d ブランチ名`で削除できる
+$ git branch -d first-branch
+Deleted branch first-branch (was 3f1bacf).
+
+# ブランチの作成（同時にブランチを移動する）
+$ git checkout -b ブランチ名
+
+# ブランチの移動
+$ git checkout ブランチ名
+
+# ローカルリポジトリのブランチ一覧を表示する
+$ git branch
+
+# ブランチの作成（ブランチの移動は行わない）
+$ git branch ブランチ名
+
+# ブランチの削除（マージされていないブランチは削除できない）
+$ git branch -d ブランチ名
+
+# ブランチの削除（マージされていないブランチも削除）
+$ git branch -D ブランチ名
+
+git merge
+現在いるブランチに別のブランチをマージします。
+
+$ git merge ブランチ名
+
+課題５
+git resetは主に3つの取り消しオプションがあり、それぞれ取り消しの範囲が異なります。
+
+それぞれ○の箇所の変更を取り消します。
+
+オプション名	作業ツリー	インデックス	コミット
+soft	×	×	○
+mixed	×	○	○
+hard	○	○	○
+
+$ git reset --soft 3f1bacfbddecc843708714f2f0e27685a01b6bb3
