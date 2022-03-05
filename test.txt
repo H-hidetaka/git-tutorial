@@ -5,3 +5,10 @@ second message
 first message
 second message
 third message - on first-branch
+
+git merge first-branch
+
+first message
+second message
+third message - on first-branch
+reset message
