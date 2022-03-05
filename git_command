@@ -195,4 +195,5 @@ soft	×	×	○
 mixed	×	○	○
 hard	○	○	○
 
-$ git reset --soft 3f1bacfbddecc843708714f2f0e27685a01b6bb3
+git reset --soft 3f1bacfbddecc843708714f2f0e27685a01b6bb3
+git reset --mixed 3f1bacfbddecc843708714f2f0e27685a01b6bb3
