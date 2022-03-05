@@ -1,3 +1,4 @@
+
 # カレントディレクトリの確認（任意のディレクトリで良いです）
 $ pwd
 /Users/fuku/workspace/runteq
@@ -197,3 +198,343 @@ hard	○	○	○
 
 git reset --soft 3f1bacfbddecc843708714f2f0e27685a01b6bb3
 git reset --mixed 3f1bacfbddecc843708714f2f0e27685a01b6bb3
+$ git reset --hard 3f1bacfbddecc843708714f2f0e27685a01b6bb3
+
+ただ、よくやりがちなミスとしてUntrackedな状態のファイルが消せないというのがあります。Untracked状態のファイルはGit操作の対象とはならないので、git reset時に戻したいのであれば一度git add ファイル名 -NでGit管理下に追加する必要があります。
+
+課題６　リモートリポジトリ
+ssh鍵作成
+sshディレクトリに移動します(※ない場合は$ mkdir ~/.sshで作成しましょう)。
+$ cd ~/.ssh
+鍵作成のコマンドを打ちます。
+$ ssh-keygen -t rsa
+下記内容を聞かれるので、全てenterを打ってください。
+
+Enter file in which to save the key (/Users/(username)/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+$ ls
+id_rsaとid_rsa.pubがあればokです。
+
+先ほど作成した鍵をGitHubに登録します。
+$ cat id_rsa.pubで内容を表示してコピーします。
+
+
+sshとは
+みんながSSHで「公開鍵」と言ってるのは、大抵のケースで「認証鍵」のこと
+※それ以外に「ホスト鍵」もある
+認証鍵は、サーバにログインするユーザを識別するための手続き(ユーザ認証)で使うデータ
+認証鍵の実体は、公開鍵暗号の1種である電子署名における、秘密鍵と公開鍵の鍵ペア
+ユーザは秘密鍵・公開鍵(両方)を使ってログインを試み、サーバは公開鍵を使ってユーザを識別する
+※サーバに公開鍵を予め登録する必要がある
+ちょうど、銀行印による押印を行員がお届け済みの印影と照らし合わせて、本人確認をするようなもの
+※電子署名は現実での「印鑑」に相当する技術
+細かい話題は色々ありますが、取り敢えず上記イメージだけ押さえて、必要に応じてこの記事に書いてあるような情報を仕入れると良いのではないかと思います。
+
+$ ssh -T git@github.com
+下記が返ってくればokです。
+
+Hi アカウント名! You've successfully authenticated, but GitHub does not provide shell access.
+
+
+# リモートリポジトリの紐付け（URLは各自置き換えてください）
+$ git remote add origin https://github.com/MrFuku/git_tutorial.git
+
+# リモートリポジトリの確認
+$ git remote -v
+origin  https://github.com/MrFuku/git_tutorial.git (fetch)
+origin  https://github.com/MrFuku/git_tutorial.git (push)
+
+ここではリモートリポジトリの名前をoriginとしています。
+他の名前で登録することもできますが、Gitでは慣習的にoriginという名称を使います。
+特に理由がない限りはoriginを使いましょう。
+
+git push -u origin master
+
+# リモートにブランチ（コミット）をpush（upstreamブランチが設定されていない場合）
+$ git push -u リモートリポジトリ名 ブランチ名
+
+# リモートにブランチ（コミット）をpush（upstreamブランチが設定されている場合）
+$ git push
+
+※ upstreamブランチとは
+リモート上にあるローカルブランチに対応するブランチのことです。
+ローカルブランチでpushやpullの操作をすると、upstreamブランチに対してその操作を行うことになります。
+
+git pull
+リモートリポジトリにある最新のコミットを取得する。
+
+# 今いるブランチの最新コミットを取得する
+$ git pull
+
+git remote
+リモートブランチに関する操作を行います。
+
+# リモートブランチを登録
+$ git remote add リモートリポジトリ名 URL
+
+# リモートリポジトリの確認
+$ git remote -v
+
+課題7 Git対象にしたくないファイルの取扱
+セキュリティ上、リモートリポジトリにpushしたくないファイル（DBのログインパスワードや認証情報が書かれたファイルなど）
+アプリケーションのキャッシュのため作成されたファイル（assetsやbootsnapのキャッシュなど）
+外部ライブラリの実行ファイル（node_modulesなど）
+
+# `tmp`ディレクトリを作成
+$ mkdir tmp
+
+# `tmp/ignorefile`ファイルを作成
+$ touch tmp/ignorefile
+
+# `tmp/ignorefile`ファイルを編集
+$ echo このファイルはGit管理下ではありません >> tmp/ignorefile
+
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .gitignore
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+.gitignoreファイル
+Gitの管理対象から除外するファイルは.gitignoreというファイルに記載しておくと管理対象から除外できます。
+
+その挙動を確認するために.gitignoreファイルを作成して以下の内容に記載してください。
+
+.gitignore
+
+# /tmpディレクトリ以下のファイルを無視
+/tmp/*
+
+
+しかし特定のディレクトリを無視した時に、その中の１ファイルだけ無視しないようにしたいことがあります。
+例えばtmpディレクトリの中にGit対象に含めたいnot_ignoreファイルがあるとしましょう。
+.gitignoreで以下のように指定することで対象に含めることができます。
+
+# Git対象に含めたいファイルを作成
+$ touch tmp/not_ignore
+
+# `tmp/not_ignore`ファイルを編集
+$ echo このファイルはGitで管理したいです >> tmp/not_ignore
+.gitignoreを以下のように編集
+
+# /tmpディレクトリ以下のファイルを無視
+/tmp/*
+
+# /tmp/not_ignoreだけは無視しない
+!/tmp/not_ignore
+
+.gitignoreに関する説明は以上です。
+不要なファイルをコミットしてしまう前に、このファイルをコミットしておきましょう。
+
+$ git add .gitignore tmp/not_ignore
+
+一度インデックスに入れてしまった内容でも、git restore --staged [ファイル名]コマンドにてインデックスへの登録を取り消すことができます。
+
+gitでのファイル管理の手順は
+
+ワークツリーで作業したファイルをgit addコマンドを使ってインデックスに登録(画像などのバイナリファイルも登録可能)
+git commitコマンドでローカルリポジトリにコミットを記録
+git pushコマンドでGitHubなどのリモートリポジトリに反映
+
+hogeブランチに切り替えたい時に使うコマンドとして正しいものはどれか
+git switchでブランチを切り替えることが出来ます。
+git checkoutでブランチを切り替えることが出来ます。
+
+ブランチを切り替えるコマンドは2つあります。
+
+git checkout ブランチ名
+git switch ブランチ名
+checkoutとswitchのコマンドには違いがあり、
+
+checkoutコマンドはgit checkout .のようにすることで、現在のワークツリーの修正を取り消すことが出来ますがswitchコマンドはあくまでブランチの切り替えの機能しかありません。
+
+git branch -cは現在のブランチの複製を行うコマンドです。
+
+git checkout -b ブランチ名でブランチの作成と切替を同時に行うことが出来ます。
+
+
+git addコマンドはワークツリーでの変更内容をインデックスに追加するコマンドです。
+
+git stashコマンドは、現在の修正内容を一旦退避させるために使います。
+退避した内容はgit stash popでまた反映させることが出来ます。
+
+git statusコマンドで、現在のワークツリーやインデックスの状況を見ることが出来るので正しいです。
+
+Changes to be committedに表示されるファイル名はインデックスに登録されたファイルで、git commitコマンドでコミットすることが出来ます。
+
+Changes not staged for commitに表示されるファイル名はワークツリー内の修正されたファイルで、インデックスに登録されてないファイルになります。
+
+Untracked filesに関しては新しく追加されたファイルで、gitで管理ができてないファイルが表示されます。git addし、インデックスに登録することでコミットできるようになります。
+
+git commitでインデックスのファイルをローカルのリポジトリに反映させることが出来ます。
+
+git checkout .は現在のワークツリーの修正内容を破棄するコマンドです。
+git restore .でも同じことが出来ます。
+
+git remote -vで、リモートリポジトリの情報を確認することが出来ます。
+
+
+git remote add origin https://example.com/example.git
+
+git pushはローカルブランチをリモートブランチに反映するコマンドになります。
+
+この方法であればgit push origin ブランチ名と毎回ブランチ名を指定することなく、人為的なミスも減るのでおすすめです。
+
+ローカルブランチをリモートブランチにあげる際は、git pushコマンドを利用します。
+
+ここでupstreamブランチが設定されていない場合は、エラーとサジェストコマンドが表示されます。
+
+サジェスト内容に従い、コマンドを実行します(例：git branch --set-upstream-to hogehoge)。
+
+これでローカルと同じブランチ名のリモートブランチにpushできます。
+
+upstreamブランチが設定された後であれば、git pushコマンドだけでリモートブランチへのpushができます。
+
+この方法であればgit push origin ブランチ名と毎回ブランチ名を指定することなく、人為的なミスも減るのでおすすめです。
+
+git pullはリモートブランチを取ってきて、現在のブランチに取り込むコマンドになります。
+なので git pull origin hogeは現在のローカルブランチにhogeブランチの変更を取り込むコマンドになります。
+upstreamブランチが設定されている場合はorigin hogeの指定は不要です。
+
+git fetch origin ブランチ名
+git merge origin ブランチ名
+
+と
+git pull origin ブランチ名で同じことができる。
+
+git branch --set-upstream-to=origin/対象のブランチ名 対象のブランチ名
+
+or
+
+git push -u origin 対象のブランチ名
+
+git revertコマンドはgit revert コミットIDの様に「対象のコミットで行われた変更を取り消す」内容のコミットを作成することが出来ます。
+そのため、間違えて行ったコミットをプッシュした場合に、その内容を打ち消すために使えるコマンドです。
+
+git stashは変更分を一時退避するコマンドです。
+
+変更分を一時的に退避させたい場合はgit stashコマンドが使えます。
+
+退避させた変更に関してはgit stash listコマンドを使うことで、下記のように退避したものが確認出来ます。
+
+stash@{0}: WIP on master: f19e36d コミットメッセージ
+stash@{1}: WIP on master: 002d58c コミットメッセージ
+stash@{2}: WIP on master: 01026e6 コミットメッセージ
+退避させたものを再度反映したい場合はgit stash apply stash@{0}の様にして戻すことが出来ます。
+
+また退避させたものを再度反映して、かつstashを削除したい場合はgit stash pop stash@{0}とします。
+
+ローカルに無いリモートブランチをローカルに持ってきて、そのブランチに切り替える手順は下記になります。
+
+git fetch
+git checkout 対象のブランチ名
+正しいリモートブランチの情報でローカルブランチが作成できたかどうかは、git logコマンドでコミット履歴を見ることなどで確認しましょう。
+
+git rebaseコマンドは過去のコミットを修正するコマンドになります。
+git rebase -iでは対話形式で過去のコミットを修正することが出来て、過去のコミットをまとめることも出来ます。
+
+選択肢2つ目: 正
+git reset --softではcommitのみを取り消します。
+commitのみを取り消すので、取り消されたcommitの内容はインデックスに登録された状態になります。
+
+選択肢3つ目: 正
+git resetとgit reset --mixedは同じ挙動をします。
+
+選択肢4つ目: 正
+git reset --mixedではaddとcommitを取り消し、取り消された内容はワークツリーに置かれた状態になります。
+
+
+現在作業しているディレクトリを表示する
+$ pwd
+
+現在作業しているディレクトリやファイルの一覧を表示する
+$ ls
+
+lsコマンドはオプションによって表示する情報を変更できます。
+
+$ ls -l
+-lオプションはファイルやディレクトリの詳細な情報も表示するオプションです。
+
+$ ls -a
+-aオプションはすべてのファイルが表示されるオプションです。
+通常では表示されないドットファイル(通称:隠しファイル)と呼ばれるファイルも表示されます。
+特殊な表示として、カレントディレクトリを表す.や親ディレクトリを表す..も表示されます。
+
+ファイルの内容を表示する
+$ cat runteq.txt
+catはConcatenate（連結する）略で、
+ファイルの中身を表示することができるコマンドです。
+
+catコマンドの後にファイル名を指定すると、
+
+作業ディレクトリを移動する
+$ cd runteq
+
+作業ディレクトリを移動する
+$ cd runteq
+
+$ cd ..
+cdの後に親ディレクトリを表す..を指定すると、
+
+ファイルを移動する
+$ mv runteq.txt runteq/
+
+ディレクトリを移動する
+$ mv runteq2/ runteq1/
+
+指定したディレクトリの配下のファイルやディレクトリを検索する
+$ find ~ -name runteq1.txt
+
+ディレクトリを作成する
+$ mkdir runteq
+
+ファイルを作成する
+$ touch runteq.txt
+
+ファイルを複製する
+$ cp runteq1.txt runteq2.txt
+
+ファイルに文字を追加する
+$ echo runteq >> runteq.txt
+出力先を変更できるリダイレクト>と組み合わせると、
+echoコマンドで表示した文字をファイルに書き込むことができます。
+リダイレクトの記号が一つの場合>は、ファイルの内容を上書きして、
+リダイレクトの記号が二つの場合>>は、ファイルの内容に追加します。
+
+$ mv runteq.txt RUNTEQ.txt
+
+ディレクトリ名を変更する
+$ mv runteq/ RUNTEQ/
+
+ファイルを削除する
+$ rm runteq.txt
+
+$ rm -i runteq.txt
+
+ rm -v runteq.txt
+
+ディレクトリを削除する
+$ rmdir runteq/
+
+$ rm -r runteq/
+
+terminal　ショートカット集
+コマンドを補完する
+TabもしくはCtrl+Iを実行すると、
+
+前に実行したコマンドを表示する
+矢印キーの上下↑ ↓または、Ctrl+PとCtrl+Nを実行すると、
+
+前に実行したコマンドを検索する
+Ctrl+Rを実行すると、
+
+表示をきれいにする
+Ctrl+Lを実行すると、一行目だけが表示するようにできます。
+
+実行中コマンドを中断する
+Ctrl+Cを実行すると、実行中のコマンドを中断できます。
