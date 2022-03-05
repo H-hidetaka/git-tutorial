@@ -13,3 +13,8 @@ first message
 second message
 third message - on first-branch
 reset message
+
+first message
+second message
+third message - on first-branch
+PR test
